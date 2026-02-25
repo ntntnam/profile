@@ -1,0 +1,273 @@
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html" charset="utf-8">
+    </head>
+    <body>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet">
+        <style>
+            * {
+                font-family: "Jua", sans-serif;
+                font-weight: 400;
+                font-style: normal;
+            }
+            .c1 {
+                color:white; 
+                font-size:20px;
+                float:right;
+                text-align:right;
+                cursor:hand;
+            }
+            .frame {
+                position: relative;
+                margin: 40px auto;
+                width: 1000px;
+                height: 45px;
+                background:#FFE3F3;
+            }
+            .m1{
+                font-size:20px;
+            }
+            .m2{
+                font-size:20px;
+                left:50px;
+            }
+            .txt {
+                position: relative;
+                top : 20px;
+                text-align: right;
+
+            }
+            a {
+                text-decoration-line: none;
+            }
+            .line {
+                border-bottom:1px solid #FFE3F3;
+            }
+        </style>
+
+<?php
+    session_start();
+    $db_host = "localhost";
+    $db_id = "antares";
+    $db_pass = 'Ab1224994@';
+    $db_name = "antares";
+
+    $conn = mysqli_connect($db_hose, $db_id, $db_pass, $db_name);
+    $conn1 = mysqli_connect($db_hose, $db_id, $db_pass, $db_name);
+
+    mysqli_set_charset($conn,"utf8");
+    mysqli_set_charset($conn1,"utf8");
+
+    $sql="alter table li auto_increment =1";
+    $conn->query($sql);
+    $sql="SET @COUNT = 0";
+    $conn->query($sql);
+    $sql="UPDATE li SET seq = @COUNT:=@COUNT+1";
+    $conn->query($sql);
+
+    if (isset($_SESSION['7id'])) { 
+        if ($_SESSION['7log2']==NULL) {
+            $_SESSION['7log2']=True;
+            echo "<script>alert('로그인 되었습니다.');</script>";
+        }
+        ?>
+        <div style="color:white; background-color: pink;">
+            <span style='font-size:50px;'>게시판</span>
+            <span class='c1' name='su' onclick="location.href='./7로그아웃.php'">로그아웃</span>
+            <span class='c1'> - </span>
+            <span class='c1' name='su' onclick="location.href='./7회원정보.php'">회원정보</span>
+        </div>
+        
+        <div style="margin:50px auto; width:1000px;">
+        <form method="GET" action="" name="form">
+            <div class="txt"> <input type='text' placeholder="제목" name="search" id="search">
+            <input type="submit" value="검색">
+            <input type="button" value="글쓰기" onClick="location.href='http://junior.catsecurity.net/~antares/%ec%9b%b97/7%ea%b2%8c%ec%8b%9c%ea%b8%80%ec%9e%91%ec%84%b1.php'"></div>
+        </form>
+
+        <div class="frame">
+            <table style="text-align:center" border="0px">
+                <tr height=45px>
+                    <td width=70px>
+                        <span class='m1'>번호</span>
+                    </td>
+
+                    <td width=610px>
+                        <span class='m1'>제목</span>
+                    </td>
+
+                    <td width=100px>
+                        <span class='m1'>작성자</span>
+                    </td>
+
+                    <td width=120px>
+                        <span class='m1'>작성일</span>
+                    </td>
+
+                    <td width=70px>
+                        <span class='m1'>조회수</span>
+                    </td>
+                </tr>
+<?php 
+
+if ($_GET['p']==NULL) {
+    $page_num=0;
+}
+else {
+    $page_num=($_GET['p']-1)*10;
+}
+if ($_GET['search']!=NULL) {
+    $search=$_GET['search'];
+}
+else {
+    $search="";
+}
+if ($search==NULL) {
+    $quer1 = "select count(*) as cnt from li;";
+    $quer = "select *from li order by seq desc limit $page_num,10;";
+}   
+else {
+    $quer1 = "select count(*) as cnt from li where sec='F' and title like '%$search%';";
+    $quer = "select *from li where sec='F' and title like '%$search%' order by seq desc limit $page_num,10;";
+}
+
+$result1 =  mysqli_query($conn,$quer1);
+$row1 = mysqli_fetch_array($result1);
+$total = $row1[cnt];
+$limit=10;
+$page=$total/$limit+1;
+
+$result =  mysqli_query($conn,$quer);
+$row = mysqli_fetch_array($result);
+
+while ($row['title']!=NULL) { 
+    $tn=$row['seq'];
+
+    $rc="select *from re where num = $tn";
+    $rr = mysqli_query($conn,$rc);
+    $rerow = mysqli_fetch_array($rr);
+
+    if ($row['sec']!='T') { ?>
+        <tr height=40px onclick="location.href='./7게시글불러오기.php?number=<?php echo $row['seq'];?>'" style="cursor:hand">
+            <td class="line" width=70px> <?php echo $row['seq']; ?> </td>
+            <td class="line" width=610px><?php echo $row['title']?></td>
+            <td class="line" width=100px> <?php echo $row['name']; ?> </td>
+            <td class="line" width=120px> <?php echo $row['date']; ?> </td>
+            <td class="line" width=70px> <?php echo $row['count']; ?> </td>
+        </tr>
+<?php   if ($rerow['num']!=0) { 
+            while ($rerow['seq']!=NULL) {  
+                if ($rerow['sec']!='T') {?>
+                <tr height=40px onclick="location.href='./7답글불러오기.php?number=<?php echo $rerow['seq'];?>'" style="cursor:hand">
+                    <td class="line" width=70px style="text-align:right"> ㄴ </td>
+                    <td class="line" width=610px> [Re]<?php echo $rerow['title']?> </td>
+                    <td class="line" width=100px> <?php echo $rerow['name']; ?> </td>
+                    <td class="line" width=120px> <?php echo $rerow['date']; ?> </td>
+                    <td class="line" width=70px> <?php echo $rerow['count']; ?> </td>
+                </tr>
+<?php           }
+                else { 
+                    if ($_SESSION['7id']==$rerow['id'] && $_SESSION['7pass']==$rerow['pass']) { ?>
+                    <tr height=40px onclick="location.href='./7답글불러오기.php?number=<?php echo $rerow['seq'];?>'" style="cursor:hand">
+                        <td class="line" width=70px style="text-align:right"> ㄴ </td>
+                        <td class="line" width=610px> [Re][비밀글]<?php echo $rerow['title']?> </td>
+                        <td class="line" width=100px> <?php echo $rerow['name']; ?> </td>
+                        <td class="line" width=120px> <?php echo $rerow['date']; ?> </td>
+                        <td class="line" width=70px> <?php echo $rerow['count']; ?> </td>
+                    </tr>
+<?php               }
+                    else { ?>
+                    <tr height=40px style="cursor:hand">
+                        <td class="line" width=70px style="text-align:right"> ㄴ </td>
+                        <td class="line" width=610px> [Re][비밀글]  </td>
+                        <td class="line" width=100px> <?php echo $rerow['name']; ?> </td>
+                        <td class="line" width=120px> <?php echo $rerow['date']; ?> </td>
+                        <td class="line" width=70px> <?php echo $rerow['count']; ?> </td>
+                    </tr>
+<?php               }
+                }
+                $rerow = mysqli_fetch_array($rr);}
+            }
+    }
+
+    else { 
+        if ($_SESSION['7id']==$row['id'] && $_SESSION['7pass']==$row['pass']) {  ?>
+            <tr height=40px onclick="location.href='./7게시글불러오기.php?number=<?php echo $row['seq'];?>'" style="cursor:hand">
+                <td class="line" width=70px> <?php echo $row['seq']; ?> </td>
+                <td class="line" width=610px>[비밀글]<?php echo $row['title']?></td>
+                <td class="line" width=100px> <?php echo $row['name']; ?> </td>
+                <td class="line" width=120px> <?php echo $row['date']; ?> </td>
+                <td class="line" width=70px> <?php echo $row['count']; ?> </td>
+            </tr>
+<?php  }
+        else { ?>
+            <tr height=40px style="cursor:hand">
+                <td class="line" width=70px> <?php echo $row['seq']; ?> </td>
+                <td class="line" width=610px>[비밀글]</td>
+                <td class="line" width=100px> <?php echo $row['name']; ?> </td>
+                <td class="line" width=120px> <?php echo $row['date']; ?> </td>
+                <td class="line" width=70px> <?php echo $row['count']; ?> </td>
+            </tr>
+<?php       } 
+        if ($rerow['num']!=0) { 
+            while ($rerow['seq']!=NULL) {  
+                if ($rerow['sec']!='T') {?>
+                <tr height=40px onclick="location.href='./7답글불러오기.php?number=<?php echo $rerow['seq'];?>'" style="cursor:hand">
+                    <td class="line" width=70px style="text-align:right"> ㄴ </td>
+                    <td class="line" width=610px> [Re]<?php echo $rerow['title']?> </td>
+                    <td class="line" width=100px> <?php echo $rerow['name']; ?> </td>
+                    <td class="line" width=120px> <?php echo $rerow['date']; ?> </td>
+                    <td class="line" width=70px> <?php echo $rerow['count']; ?> </td>
+                </tr>
+        <?php   }
+                else { 
+                    if ($_SESSION['7id']==$rerow['id'] && $_SESSION['7pass']==$rerow['pass']) { ?>
+                    <tr height=40px onclick="location.href='./7답글불러오기.php?number=<?php echo $rerow['seq'];?>'" style="cursor:hand">
+                        <td class="line" width=70px style="text-align:right"> ㄴ </td>
+                        <td class="line" width=610px> [Re][비밀글]<?php echo $rerow['title']?> </td>
+                        <td class="line" width=100px> <?php echo $rerow['name']; ?> </td>
+                        <td class="line" width=120px> <?php echo $rerow['date']; ?> </td>
+                        <td class="line" width=70px> <?php echo $rerow['count']; ?> </td>
+                    </tr>
+        <?php               }
+                    else { ?>
+                    <tr height=40px style="cursor:hand">
+                        <td class="line" width=70px style="text-align:right"> ㄴ </td>
+                        <td class="line" width=610px> [Re][비밀글]  </td>
+                        <td class="line" width=100px> <?php echo $rerow['name']; ?> </td>
+                        <td class="line" width=120px> <?php echo $rerow['date']; ?> </td>
+                        <td class="line" width=70px> <?php echo $rerow['count']; ?> </td>
+                    </tr>
+        <?php       }
+                }
+                $rerow = mysqli_fetch_array($rr);}
+            }
+            
+    }
+    $row = mysqli_fetch_array($result);      
+} ?>
+        </table>
+        <br>
+        <div align=center><?php for ($i=1; $i<$page;$i++) {echo "<a href=./7게시판.php?search=$search&p=$i>[$i]</a>";}?><div>
+    </div>      
+    </div>
+<?php }
+    else { ?>
+        <div style="background-color: pink;">
+            <span style='color:white; font-size:50px;'>게시판</span>
+            <span class='c1' name='su' onclick="location.href='./7회원가입.php'">회원가입</span>
+            <span class='c1'> - </span>
+            <span class='c1' name='si' onclick="location.href='./7로그인.php'">로그인</span>
+            <span class='c1'> - </span>
+            <span class='c1' name='li' onclick="location.href='./7게시판.php'">게시판</span>
+        </div>
+        <br>
+    <?php
+        echo "<p style=font-size:50px;>"."로그인이 필요합니다."."</p>";
+     }
+?>
+    </body>
+</html>
+
